@@ -118,3 +118,42 @@ export async function requestPasswordReset(input: ResetRequestInput): Promise<Ac
 
   return { ok: true };
 }
+
+export async function confirmPasswordReset(input: ResetConfirmInput): Promise<ActionResult> {
+  const parsed = resetConfirmSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  const { token, password } = parsed.data;
+
+  const rows = await db
+    .select()
+    .from(schema.tokens)
+    .where(
+      and(
+        eq(schema.tokens.token, token),
+        eq(schema.tokens.kind, "password_reset"),
+        isNull(schema.tokens.usedAt),
+        gt(schema.tokens.expiresAt, new Date()),
+      ),
+    )
+    .limit(1);
+
+  const tokenRow = rows[0];
+  if (!tokenRow) {
+    return { ok: false, error: "This reset link is invalid or has expired." };
+  }
+
+  const passwordHash = await hashPassword(password);
+  await db
+    .update(schema.users)
+    .set({ passwordHash })
+    .where(eq(schema.users.id, tokenRow.userId));
+
+  await db
+    .update(schema.tokens)
+    .set({ usedAt: new Date() })
+    .where(eq(schema.tokens.id, tokenRow.id));
+
+  return { ok: true };
+}
