@@ -65,16 +65,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.emailVerifiedAt = (user as { emailVerifiedAt: Date | null })
-          .emailVerifiedAt;
+        const ev = (user as { emailVerifiedAt: Date | null }).emailVerifiedAt;
+        token.emailVerifiedAt = ev ? ev.toISOString() : null;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user && token.id) {
         session.user.id = token.id as string;
-        session.user.emailVerifiedAt =
-          (token.emailVerifiedAt as Date | null) ?? null;
+        const ev = token.emailVerifiedAt as string | null | undefined;
+        session.user.emailVerifiedAt = ev ? new Date(ev) : null;
       }
       return session;
     },

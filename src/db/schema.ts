@@ -126,6 +126,12 @@ export const templates = pgTable("templates", {
     .references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
+  // parent_template_id is intentionally NOT a foreign key in v1.
+  // It records lineage (cloned-from or previous-version) but is allowed
+  // to dangle if a parent template is ever deleted — there's no FK
+  // cascade to define meaningful semantics yet (delete cascade would
+  // orphan history; set-null would lose lineage). Revisit when Plan 2
+  // introduces template editing and the use cases become concrete.
   parentTemplateId: uuid("parent_template_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -14,7 +14,6 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@auth/drizzle-adapter": "^1.11.2",
     "@hookform/resolvers": "^5.4.0",
     "@neondatabase/serverless": "^1.1.0",
     "@radix-ui/react-label": "^2.1.8",
@@ -44,7 +43,6 @@
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "eslint": "^10.4.0",
-    "eslint-config-next": "^16.2.6",
     "tailwindcss": "^4.3.0",
     "tsx": "^4.22.3",
     "typescript": "^5.6.3",
