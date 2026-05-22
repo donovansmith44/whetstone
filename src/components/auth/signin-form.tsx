@@ -29,8 +29,7 @@ export function SigninForm() {
       if (result?.error) {
         setServerError("Invalid email or password.");
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        router.push("/dashboard" as any); // route added in later task
+        router.push("/dashboard");
         router.refresh();
       }
     });
