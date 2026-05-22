@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, gt, isNull } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { signupSchema, type SignupInput } from "@/lib/validators";
 import { hashPassword } from "@/lib/password";
@@ -49,6 +49,38 @@ export async function signup(input: SignupInput): Promise<ActionResult> {
     console.error("verification email failed", err);
     return { ok: false, error: "Account created but we couldn't send the verification email. Try again later." };
   }
+
+  return { ok: true };
+}
+
+export async function verifyEmailToken(token: string): Promise<ActionResult> {
+  const rows = await db
+    .select()
+    .from(schema.tokens)
+    .where(
+      and(
+        eq(schema.tokens.token, token),
+        eq(schema.tokens.kind, "email_verify"),
+        isNull(schema.tokens.usedAt),
+        gt(schema.tokens.expiresAt, new Date()),
+      ),
+    )
+    .limit(1);
+
+  const tokenRow = rows[0];
+  if (!tokenRow) {
+    return { ok: false, error: "This verification link is invalid or has expired." };
+  }
+
+  await db
+    .update(schema.users)
+    .set({ emailVerifiedAt: new Date() })
+    .where(eq(schema.users.id, tokenRow.userId));
+
+  await db
+    .update(schema.tokens)
+    .set({ usedAt: new Date() })
+    .where(eq(schema.tokens.id, tokenRow.id));
 
   return { ok: true };
 }
