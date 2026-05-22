@@ -14,8 +14,7 @@ export default function SigninPage() {
             New here? <Link href="/signup" className="underline">Create an account</Link>
           </p>
           <p>
-            {/* Will be converted back to <Link> once Task 12 (reset-password route) lands */}
-            Forgot password? <a href="/reset-password" className="underline">Reset it</a>
+            Forgot password? <Link href="/reset-password" className="underline">Reset it</Link>
           </p>
         </div>
       </div>

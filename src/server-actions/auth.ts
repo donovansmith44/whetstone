@@ -2,10 +2,10 @@
 
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { db, schema } from "@/db";
-import { signupSchema, type SignupInput } from "@/lib/validators";
+import { signupSchema, type SignupInput, resetRequestSchema, type ResetRequestInput, resetConfirmSchema, type ResetConfirmInput } from "@/lib/validators";
 import { hashPassword } from "@/lib/password";
 import { generateToken, addExpiry } from "@/lib/tokens";
-import { sendVerificationEmail } from "@/lib/email";
+import { sendVerificationEmail, sendPasswordResetEmail } from "@/lib/email";
 
 export type ActionResult =
   | { ok: true }
@@ -81,6 +81,40 @@ export async function verifyEmailToken(token: string): Promise<ActionResult> {
     .update(schema.tokens)
     .set({ usedAt: new Date() })
     .where(eq(schema.tokens.id, tokenRow.id));
+
+  return { ok: true };
+}
+
+export async function requestPasswordReset(input: ResetRequestInput): Promise<ActionResult> {
+  const parsed = resetRequestSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Invalid email" };
+  }
+  const { email } = parsed.data;
+
+  const rows = await db
+    .select({ id: schema.users.id })
+    .from(schema.users)
+    .where(eq(schema.users.email, email))
+    .limit(1);
+  const user = rows[0];
+
+  // Always return ok to avoid leaking whether an email is registered.
+  if (!user) return { ok: true };
+
+  const token = generateToken();
+  await db.insert(schema.tokens).values({
+    userId: user.id,
+    kind: "password_reset",
+    token,
+    expiresAt: addExpiry(1), // 1 hour
+  });
+
+  try {
+    await sendPasswordResetEmail(email, token);
+  } catch (err) {
+    console.error("password reset email failed", err);
+  }
 
   return { ok: true };
 }
