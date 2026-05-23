@@ -8,8 +8,7 @@ group's gallery so others can clone them.
 
 ## Status
 
-Foundation + Auth shipped. Groups, templates, entries, engagement,
-notifications, polish still to come — see `docs/superpowers/plans/`.
+Plan 2 (Groups + Templates + Daily Entry) shipped. Engagement, publishing, notifications, polish still to come — see `docs/superpowers/plans/`.
 
 ## Local development
 
