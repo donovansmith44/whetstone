@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 export default auth((req) => {
   const isAuthed = !!req.auth;
   const path = req.nextUrl.pathname;
+  if (path.startsWith("/invite/")) return; // handled in-page
   const needsAuth =
     path.startsWith("/dashboard") ||
     path.startsWith("/today") ||
