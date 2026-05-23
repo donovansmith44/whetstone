@@ -39,7 +39,7 @@ export function TemplateForm({
       const result = mode === "create"
         ? await createTemplate(data)
         : await updateTemplate(templateId!, data);
-      if (result.ok) router.push("/templates" as never);
+      if (result.ok) router.push("/templates");
       else setServerError(result.error);
     });
   };

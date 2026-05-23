@@ -10,7 +10,7 @@ export default async function AcceptInvitePage({ params }: { params: Promise<{ t
     redirect(`/signin?next=/invite/${token}`);
   }
   const result = await acceptInvite(token);
-  if (result.ok) redirect(`/g/${result.data.slug}` as never); // /g/[slug]/page.tsx arrives in a later task
+  if (result.ok) redirect(`/g/${result.data.slug}`);
   return (
     <main className="min-h-screen p-6 max-w-md mx-auto text-center space-y-4">
       <h1 className="text-xl font-semibold">Couldn't accept invite</h1>

@@ -15,7 +15,7 @@ export default async function MyTemplatesPage() {
     <main className="min-h-screen p-6 max-w-2xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">My templates</h1>
-        <Button asChild><Link href={"/templates/new" as never}>+ New template</Link></Button>
+        <Button asChild><Link href="/templates/new">+ New template</Link></Button>
       </div>
       <ul className="divide-y border rounded">
         {templates.map((t) => (
@@ -33,7 +33,7 @@ export default async function MyTemplatesPage() {
                 </form>
               )}
               <Button asChild variant="outline" size="sm">
-                <Link href={`/templates/${t.id}/edit` as never}>Edit</Link>
+                <Link href={`/templates/${t.id}/edit`}>Edit</Link>
               </Button>
             </div>
           </li>

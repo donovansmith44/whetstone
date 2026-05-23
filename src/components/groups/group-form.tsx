@@ -22,8 +22,7 @@ export function GroupForm() {
     setServerError(null);
     startTransition(async () => {
       const result = await createGroup(data);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (result.ok) router.push(`/g/${result.data.slug}` as never); // /g/[slug]/page.tsx arrives in a later task
+      if (result.ok) router.push(`/g/${result.data.slug}`);
       else setServerError(result.error);
     });
   };
