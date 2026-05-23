@@ -47,3 +47,9 @@ export const templateSchema = z.object({
   fields: z.array(templateFieldSchema).min(1, "Add at least one field"),
 });
 export type TemplateInput = z.infer<typeof templateSchema>;
+
+export const entrySchema = z.object({
+  templateId: z.string().uuid(),
+  values: z.record(z.string(), z.string()),
+});
+export type EntryInput = z.infer<typeof entrySchema>;
