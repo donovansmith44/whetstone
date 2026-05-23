@@ -31,3 +31,19 @@ export const createGroupSchema = z.object({
   discordWebhookUrl: z.string().url().optional().or(z.literal("")),
 });
 export type CreateGroupInput = z.infer<typeof createGroupSchema>;
+
+export const templateFieldSchema = z.object({
+  key: z.string().min(1).regex(/^[a-z][a-z0-9_]*$/, "Use lowercase letters, digits, underscores"),
+  label: z.string().min(1).max(80),
+  prompt: z.string().max(300).optional(),
+  type: z.enum(["text", "textarea", "list", "number"]),
+  order: z.number().int().min(0),
+  autocompleteFromFieldKey: z.string().optional(),
+});
+
+export const templateSchema = z.object({
+  name: z.string().min(1).max(80),
+  description: z.string().max(300).optional(),
+  fields: z.array(templateFieldSchema).min(1, "Add at least one field"),
+});
+export type TemplateInput = z.infer<typeof templateSchema>;
