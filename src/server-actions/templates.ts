@@ -1,6 +1,6 @@
 "use server";
 
-import { eq, desc } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/db";
 import { auth } from "@/auth";
@@ -140,4 +140,69 @@ export async function getActiveTemplate() {
     .where(eq(schema.userActiveTemplate.userId, userId)).limit(1);
   if (!active[0]) return null;
   return getTemplateWithFields(active[0].templateId);
+}
+
+export async function publishTemplateToGroup(templateId: string, groupId: string): Promise<Result> {
+  const userId = await requireUser();
+  // Verify ownership of template
+  const t = await db.select().from(schema.templates)
+    .where(eq(schema.templates.id, templateId)).limit(1);
+  if (!t[0] || t[0].ownerUserId !== userId) return { ok: false, error: "Template not found" };
+  // Verify membership in group
+  const m = await db.select().from(schema.groupMembers)
+    .where(and(
+      eq(schema.groupMembers.groupId, groupId),
+      eq(schema.groupMembers.userId, userId),
+    )).limit(1);
+  if (!m[0]) return { ok: false, error: "Not a member of this group" };
+  // Idempotent insert (UNIQUE primary key on template_id+group_id)
+  await db.insert(schema.templatePublications).values({
+    templateId, groupId, publishedBy: userId,
+  }).onConflictDoNothing();
+  revalidatePath(`/g`);
+  return { ok: true, data: undefined };
+}
+
+export async function cloneTemplate(sourceTemplateId: string): Promise<Result<{ id: string }>> {
+  const userId = await requireUser();
+  const source = await getTemplateWithFields(sourceTemplateId);
+  if (!source) return { ok: false, error: "Template not found" };
+
+  const [cloned] = await db.insert(schema.templates).values({
+    ownerUserId: userId,
+    name: source.name,
+    description: source.description,
+    parentTemplateId: sourceTemplateId,
+  }).returning({ id: schema.templates.id });
+
+  for (const f of source.fields) {
+    await db.insert(schema.templateFields).values({
+      templateId: cloned.id,
+      key: f.key, label: f.label, prompt: f.prompt,
+      type: f.type, order: f.order,
+      autocompleteFromFieldKey: f.autocompleteFromFieldKey,
+    });
+  }
+
+  // Auto-set active if user has none
+  const active = await db.select().from(schema.userActiveTemplate)
+    .where(eq(schema.userActiveTemplate.userId, userId)).limit(1);
+  if (active.length === 0) {
+    await db.insert(schema.userActiveTemplate).values({ userId, templateId: cloned.id });
+  }
+  revalidatePath("/templates");
+  return { ok: true, data: { id: cloned.id } };
+}
+
+export async function getPublishedTemplatesForGroup(groupId: string) {
+  return db.select({
+    templateId: schema.templates.id,
+    name: schema.templates.name,
+    description: schema.templates.description,
+    publishedBy: schema.users.name,
+    publishedAt: schema.templatePublications.publishedAt,
+  }).from(schema.templatePublications)
+    .innerJoin(schema.templates, eq(schema.templates.id, schema.templatePublications.templateId))
+    .innerJoin(schema.users, eq(schema.users.id, schema.templatePublications.publishedBy))
+    .where(eq(schema.templatePublications.groupId, groupId));
 }
