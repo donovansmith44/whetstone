@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type Field = { key: string; label: string; type: string };
 
 export function EntryCard({
@@ -5,11 +7,15 @@ export function EntryCard({
   fields,
   values,
   createdAt,
+  slug,
+  entryId,
 }: {
   userName: string;
   fields: Field[];
   values: Record<string, string>;
   createdAt: Date;
+  slug?: string;
+  entryId?: string;
 }) {
   return (
     <article className="border rounded p-4 space-y-3">
@@ -29,6 +35,13 @@ export function EntryCard({
           );
         })}
       </div>
+      {slug && entryId && (
+        <footer className="pt-1">
+          <Link href={`/g/${slug}/entries/${entryId}`} className="text-xs text-blue-600 hover:underline">
+            View entry →
+          </Link>
+        </footer>
+      )}
     </article>
   );
 }
