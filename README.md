@@ -35,6 +35,27 @@ Visit http://localhost:3000.
 - `npm run db:migrate` — apply migrations to the configured DB
 - `npm run db:studio` — open Drizzle Studio in the browser
 
+## Cron route (Discord reminders)
+
+Vercel runs `GET /api/cron/reminders` every 30 minutes (configured in `vercel.json`).
+It finds group members whose reminder window has opened, haven't checked in yet, and
+posts a nudge to the group's Discord webhook. Deduplication is handled by `notification_log`.
+
+**Required env vars (Vercel project settings):**
+- `CRON_SECRET` — Vercel sets this automatically; the route checks `Authorization: Bearer <secret>`
+- `DISCORD_WEBHOOK_URL` is stored per-group in the database, not as a global env var
+
+**Testing locally:**
+
+1. Add `CRON_SECRET=any-string` to `.env.local` (or omit it to skip auth in dev)
+2. Start the dev server: `npm run dev`
+3. Hit the route:
+   ```bash
+   curl -X GET "http://localhost:3000/api/cron/reminders" \
+     -H "Authorization: Bearer any-string"
+   ```
+   Returns `{ ok: true, sent: [] }` when no users qualify.
+
 ## Architecture
 
 See [`docs/superpowers/specs/2026-05-22-whetstone-design.md`](docs/superpowers/specs/2026-05-22-whetstone-design.md)
