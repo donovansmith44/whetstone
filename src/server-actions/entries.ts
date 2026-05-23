@@ -136,6 +136,41 @@ export async function getGroupFeedForDate(groupId: string, date: string) {
   return out;
 }
 
+/** Last N entries for the signed-in user, newest first — for the /me history page. */
+export async function getMyHistory(limit = 30) {
+  const user = await requireSession();
+  const rows = await db.select({
+    id: schema.entries.id,
+    templateId: schema.entries.templateId,
+    entryDate: schema.entries.entryDate,
+    values: schema.entries.values,
+    createdAt: schema.entries.createdAt,
+  }).from(schema.entries)
+    .where(eq(schema.entries.userId, user.id))
+    .orderBy(desc(schema.entries.entryDate))
+    .limit(limit);
+
+  const out = [] as Array<{
+    id: string;
+    entryDate: string;
+    fields: { key: string; label: string; type: string }[];
+    values: Record<string, string>;
+    createdAt: Date;
+  }>;
+  for (const e of rows) {
+    const tpl = await getTemplateWithFields(e.templateId);
+    if (!tpl) continue;
+    out.push({
+      id: e.id,
+      entryDate: e.entryDate,
+      fields: tpl.fields.map((f) => ({ key: f.key, label: f.label, type: f.type })),
+      values: (e.values as Record<string, string>) ?? {},
+      createdAt: e.createdAt,
+    });
+  }
+  return out;
+}
+
 /** Distinct dates with at least one entry from any group member, for the calendar/history view. */
 export async function getGroupHistoryDates(groupId: string, limit = 60) {
   await requireSession();
