@@ -24,3 +24,10 @@ export type SignupInput = z.infer<typeof signupSchema>;
 export type SigninInput = z.infer<typeof signinSchema>;
 export type ResetRequestInput = z.infer<typeof resetRequestSchema>;
 export type ResetConfirmInput = z.infer<typeof resetConfirmSchema>;
+
+export const createGroupSchema = z.object({
+  name: z.string().min(1).max(80),
+  description: z.string().max(500).optional(),
+  discordWebhookUrl: z.string().url().optional().or(z.literal("")),
+});
+export type CreateGroupInput = z.infer<typeof createGroupSchema>;
