@@ -42,7 +42,7 @@ export default async function GroupFeedPage({ params }: { params: Promise<{ slug
           <p className="text-sm text-gray-500">No entries yet. <Link href="/today" className="underline">Add yours →</Link></p>
         ) : (
           todayEntries.map((e) => (
-            <EntryCard key={e.id} userName={e.userName} fields={e.fields} values={e.values} createdAt={e.createdAt} slug={slug} entryId={e.id} />
+            <EntryCard key={e.id} userName={e.userName} fields={e.fields} values={e.values} createdAt={e.createdAt} slug={slug} entryId={e.id} reactionCount={e.reactionCount} commentCount={e.commentCount} />
           ))
         )}
       </section>
@@ -54,7 +54,7 @@ export default async function GroupFeedPage({ params }: { params: Promise<{ slug
             <div key={day.date} className="space-y-3">
               <h3 className="text-sm uppercase tracking-wide text-gray-500">{day.date}</h3>
               {day.entries.map((e) => (
-                <EntryCard key={e.id} userName={e.userName} fields={e.fields} values={e.values} createdAt={e.createdAt} slug={slug} entryId={e.id} />
+                <EntryCard key={e.id} userName={e.userName} fields={e.fields} values={e.values} createdAt={e.createdAt} slug={slug} entryId={e.id} reactionCount={e.reactionCount} commentCount={e.commentCount} />
               ))}
             </div>
           ))}

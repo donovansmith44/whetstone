@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, desc, inArray } from "drizzle-orm";
+import { and, eq, desc, inArray, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db, schema } from "@/db";
 import { auth } from "@/auth";
@@ -111,7 +111,7 @@ export async function getGroupFeedForDate(groupId: string, date: string) {
     ))
     .orderBy(desc(schema.entries.createdAt));
 
-  // Hydrate each entry with its template fields
+  // Hydrate each entry with its template fields + engagement counts
   const out = [] as Array<{
     id: string;
     userId: string;
@@ -119,11 +119,15 @@ export async function getGroupFeedForDate(groupId: string, date: string) {
     fields: { key: string; label: string; type: string }[];
     values: Record<string, string>;
     createdAt: Date;
+    reactionCount: number;
+    commentCount: number;
   }>;
   for (const e of entries) {
     const tpl = await getTemplateWithFields(e.templateId);
     if (!tpl) continue;
     const member = members.find((m) => m.userId === e.userId);
+    const [rxRow] = await db.select({ n: count() }).from(schema.reactions).where(eq(schema.reactions.entryId, e.id));
+    const [cmRow] = await db.select({ n: count() }).from(schema.comments).where(eq(schema.comments.entryId, e.id));
     out.push({
       id: e.id,
       userId: e.userId,
@@ -131,6 +135,8 @@ export async function getGroupFeedForDate(groupId: string, date: string) {
       fields: tpl.fields.map((f) => ({ key: f.key, label: f.label, type: f.type })),
       values: (e.values as Record<string, string>) ?? {},
       createdAt: e.createdAt,
+      reactionCount: rxRow?.n ?? 0,
+      commentCount: cmRow?.n ?? 0,
     });
   }
   return out;
