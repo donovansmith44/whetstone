@@ -32,6 +32,7 @@ export default async function GroupFeedPage({ params }: { params: Promise<{ slug
         <h1 className="text-2xl font-semibold">{group.name}</h1>
         <div className="flex gap-2">
           <Button asChild variant="outline" size="sm"><Link href={`/g/${slug}/templates`}>Templates</Link></Button>
+          <Button asChild variant="outline" size="sm"><Link href={`/templates/new?publishTo=${slug}` as never}>+ Template</Link></Button>
           <Button asChild variant="outline" size="sm"><Link href={`/g/${slug}/invite`}>Invite</Link></Button>
           <Button asChild variant="outline" size="sm"><Link href={`/g/${slug}/settings`}>Settings</Link></Button>
         </div>

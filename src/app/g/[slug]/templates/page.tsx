@@ -18,9 +18,14 @@ export default async function GroupTemplatesPage({ params }: { params: Promise<{
     <main className="min-h-screen p-6 max-w-2xl mx-auto space-y-6">
       <header className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">{group.name} — Templates</h1>
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/g/${slug}`}>Back to feed</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild size="sm">
+            <Link href={`/templates/new?publishTo=${slug}` as never}>+ Create new template</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/g/${slug}`}>Back to feed</Link>
+          </Button>
+        </div>
       </header>
       {pubs.length === 0 ? (
         <p className="text-gray-600">No templates published in this group yet.</p>

@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { templateSchema, type TemplateInput } from "@/lib/validators";
-import { createTemplate, updateTemplate } from "@/server-actions/templates";
+import { createTemplate, updateTemplate, publishToGroupBySlug } from "@/server-actions/templates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,10 +20,12 @@ export function TemplateForm({
   mode,
   initial,
   templateId,
+  publishToSlug,
 }: {
   mode: "create" | "edit";
   initial?: TemplateInput;
   templateId?: string;
+  publishToSlug?: string;
 }) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -39,8 +41,15 @@ export function TemplateForm({
       const result = mode === "create"
         ? await createTemplate(data)
         : await updateTemplate(templateId!, data);
-      if (result.ok) router.push("/templates");
-      else setServerError(result.error);
+      if (!result.ok) { setServerError(result.error); return; }
+
+      if (mode === "create" && publishToSlug && "id" in result.data) {
+        const pub = await publishToGroupBySlug(result.data.id, publishToSlug);
+        if (!pub.ok) { setServerError(pub.error); return; }
+        router.push(`/g/${publishToSlug}/templates` as never);
+      } else {
+        router.push("/templates");
+      }
     });
   };
 
