@@ -1,3 +1,4 @@
+import { AuthShell } from "@/components/auth/auth-shell";
 import { ResetConfirmForm } from "@/components/auth/reset-confirm-form";
 
 export default async function ResetConfirmPage({
@@ -7,11 +8,25 @@ export default async function ResetConfirmPage({
 }) {
   const { token } = await params;
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-sm space-y-6">
-        <h1 className="text-2xl font-semibold">Choose a new password</h1>
-        <ResetConfirmForm token={token} />
-      </div>
-    </main>
+    <AuthShell
+      eyebrow="Set a New Password"
+      title="Choose a"
+      italic="new key"
+      intro="Pick a fresh password — at least twelve characters. You'll be signed in afterward."
+    >
+      <h2
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "20px",
+          fontWeight: 500,
+          marginBottom: "20px",
+          color: "var(--color-ink)",
+          fontVariationSettings: '"opsz" 24, "SOFT" 30',
+        }}
+      >
+        New password
+      </h2>
+      <ResetConfirmForm token={token} />
+    </AuthShell>
   );
 }
