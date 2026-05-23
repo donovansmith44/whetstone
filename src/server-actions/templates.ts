@@ -163,6 +163,13 @@ export async function publishTemplateToGroup(templateId: string, groupId: string
   return { ok: true, data: undefined };
 }
 
+export async function publishToGroupBySlug(templateId: string, slug: string): Promise<Result> {
+  const group = (await db.select({ id: schema.groups.id })
+    .from(schema.groups).where(eq(schema.groups.slug, slug)).limit(1))[0];
+  if (!group) return { ok: false, error: "Group not found" };
+  return publishTemplateToGroup(templateId, group.id);
+}
+
 export async function cloneTemplate(sourceTemplateId: string): Promise<Result<{ id: string }>> {
   const userId = await requireUser();
   const source = await getTemplateWithFields(sourceTemplateId);
