@@ -5,16 +5,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetRequestSchema, type ResetRequestInput } from "@/lib/validators";
 import { requestPasswordReset } from "@/server-actions/auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 export function ResetRequestForm() {
   const [submitted, setSubmitted] = useState(false);
   const [pending, startTransition] = useTransition();
-  const { register, handleSubmit, formState: { errors } } = useForm<ResetRequestInput>({
-    resolver: zodResolver(resetRequestSchema),
-  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResetRequestInput>({ resolver: zodResolver(resetRequestSchema) });
 
   const onSubmit = (data: ResetRequestInput) => {
     startTransition(async () => {
@@ -25,9 +24,29 @@ export function ResetRequestForm() {
 
   if (submitted) {
     return (
-      <div className="space-y-2">
-        <h2 className="font-medium">Check your email</h2>
-        <p className="text-sm text-gray-600">
+      <div className="space-y-3">
+        <div className="rule-ornament" style={{ margin: "0 0 1rem", textAlign: "left" }}>
+          <span style={{ color: "var(--color-clay)" }}>✦</span>
+        </div>
+        <h3
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "20px",
+            fontWeight: 500,
+            color: "var(--color-ink)",
+          }}
+        >
+          Check your inbox
+        </h3>
+        <p
+          style={{
+            fontFamily: "var(--font-display)",
+            fontStyle: "italic",
+            fontSize: "15px",
+            lineHeight: 1.55,
+            color: "var(--color-ink-soft)",
+          }}
+        >
           If an account exists for that address, a reset link is on its way.
         </p>
       </div>
@@ -35,15 +54,33 @@ export function ResetRequestForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-1">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" {...register("email")} autoComplete="email" />
-        {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
+      <div>
+        <label htmlFor="email" className="field-label block mb-1.5">Email</label>
+        <input
+          id="email"
+          type="email"
+          autoComplete="email"
+          className="field"
+          {...register("email")}
+        />
+        {errors.email && (
+          <p
+            className="mt-1"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontStyle: "italic",
+              fontSize: "13px",
+              color: "var(--color-clay-deep)",
+            }}
+          >
+            {errors.email.message}
+          </p>
+        )}
       </div>
-      <Button type="submit" disabled={pending} className="w-full">
-        {pending ? "Sending..." : "Send reset link"}
-      </Button>
+      <button type="submit" disabled={pending} className="btn-clay w-full">
+        {pending ? "Sending …" : "Send reset link"}
+      </button>
     </form>
   );
 }
