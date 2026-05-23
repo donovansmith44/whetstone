@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getMyGroups } from "@/server-actions/groups";
@@ -61,9 +61,6 @@ export default async function DashboardPage() {
         <Button asChild variant="outline" size="sm"><Link href="/templates">My templates</Link></Button>
       </section>
 
-      <form action={async () => { "use server"; await signOut({ redirectTo: "/" }); }}>
-        <Button type="submit" variant="outline">Sign out</Button>
-      </form>
     </main>
   );
 }
