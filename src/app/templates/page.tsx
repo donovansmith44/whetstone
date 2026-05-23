@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { listMyTemplates, getActiveTemplate } from "@/server-actions/templates";
+import { listMyTemplates, getActiveTemplate, publishTemplateToGroup } from "@/server-actions/templates";
 import { setActiveTemplate } from "@/server-actions/templates";
+import { getMyGroups } from "@/server-actions/groups";
 import { Button } from "@/components/ui/button";
 
 export default async function MyTemplatesPage() {
@@ -10,6 +11,7 @@ export default async function MyTemplatesPage() {
   if (!session?.user) redirect("/signin");
   const templates = await listMyTemplates();
   const active = await getActiveTemplate();
+  const myGroups = await getMyGroups();
 
   return (
     <main className="min-h-screen p-6 max-w-2xl mx-auto space-y-6">
@@ -19,23 +21,42 @@ export default async function MyTemplatesPage() {
       </div>
       <ul className="divide-y border rounded">
         {templates.map((t) => (
-          <li key={t.id} className="p-3 flex justify-between items-center">
-            <div>
-              <div className="font-medium">
-                {t.name} {active?.id === t.id && <span className="text-xs text-green-600">(active)</span>}
+          <li key={t.id} className="p-3 space-y-2">
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="font-medium">
+                  {t.name} {active?.id === t.id && <span className="text-xs text-green-600">(active)</span>}
+                </div>
+                {t.description && <div className="text-sm text-gray-500">{t.description}</div>}
               </div>
-              {t.description && <div className="text-sm text-gray-500">{t.description}</div>}
+              <div className="flex gap-2">
+                {active?.id !== t.id && (
+                  <form action={async () => { "use server"; await setActiveTemplate(t.id); }}>
+                    <Button type="submit" variant="outline" size="sm">Set active</Button>
+                  </form>
+                )}
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/templates/${t.id}/edit`}>Edit</Link>
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              {active?.id !== t.id && (
-                <form action={async () => { "use server"; await setActiveTemplate(t.id); }}>
-                  <Button type="submit" variant="outline" size="sm">Set active</Button>
-                </form>
-              )}
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/templates/${t.id}/edit`}>Edit</Link>
-              </Button>
-            </div>
+            {myGroups.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {myGroups.map((g) => (
+                  <form
+                    key={g.id}
+                    action={async () => {
+                      "use server";
+                      await publishTemplateToGroup(t.id, g.id);
+                    }}
+                  >
+                    <Button type="submit" variant="outline" size="sm">
+                      Publish to {g.name}
+                    </Button>
+                  </form>
+                ))}
+              </div>
+            )}
           </li>
         ))}
       </ul>
