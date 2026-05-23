@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { signinSchema, type SigninInput } from "@/lib/validators";
+import { getOnboardingRedirect } from "@/server-actions/onboarding";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +30,8 @@ export function SigninForm() {
       if (result?.error) {
         setServerError("Invalid email or password.");
       } else {
-        router.push("/dashboard");
+        const destination = await getOnboardingRedirect();
+        router.push(destination);
         router.refresh();
       }
     });
